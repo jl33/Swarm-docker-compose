@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  drupal:
+    image: drupal:latest
+    ports:
+      - 8080:80
+    depends_on:
+      - postgres
+    networks:
+      - dev
+    secrets:
+      - source: drupal_secret
+        target: /run/secrets/drupal_secret
+    deploy:
+      #mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  postgres:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+    networks:
+      - dev
+    deploy:
+      #mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.id == b8xst8aj8juk6547cshve26zr]
+      restart_policy:
+        condition: on-failure
+networks:
+  dev:
+    driver: overlay
+
+volumes:
+  postgres_data:
+
+secrets:
+  drupal_secret:
+    external: true
+
